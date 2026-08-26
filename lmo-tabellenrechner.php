@@ -2,7 +2,7 @@
 /**
  * Project: LMOnext
  * Filename: addon/tabellenrechner/lmo-tabellenrechner.php
- * Fileversion: 1.0.7
+ * Fileversion: 1.1.0
  *
  * PHP version 8.2
  *
@@ -51,8 +51,10 @@ declare(strict_types=1);
 
 use LMOnext\Liga\LigaService;
 
-// Wird diese Datei direkt aufgerufen (URL/IFrame) oder per include()?
-$trIsDirectCall = basename($_SERVER['SCRIPT_NAME'] ?? '') === 'lmo-tabellenrechner.php';
+// Wird diese Datei über den zentralen Controller addon-run.php aufgerufen
+// (der einzige noch erlaubte Aufrufweg, siehe addon/.htaccess) oder per
+// include()?
+$trIsDirectCall = defined('LMO_ADDON_STANDALONE_CALL');
 
 require_once __DIR__ . '/../../frontend/bootstrap.php';
 
@@ -88,6 +90,11 @@ function trProjectRootUrlPrefix() : string
         return $prefix;
     }
 
+    if (defined('LMO_ADDON_WEB_BASE')) {
+        $prefix = rtrim(dirname(rtrim(LMO_ADDON_WEB_BASE, '/'), 2), '/') . '/';
+        return $prefix;
+    }
+
     $projectRootDisk = rtrim(str_replace('\\', '/', dirname(__DIR__, 2)), '/');
     $scriptFilename  = str_replace('\\', '/', (string)($_SERVER['SCRIPT_FILENAME'] ?? ''));
     $scriptName      = (string)($_SERVER['SCRIPT_NAME'] ?? '');
@@ -101,7 +108,7 @@ function trProjectRootUrlPrefix() : string
         }
     }
 
-    $isDirectCall = basename($_SERVER['SCRIPT_NAME'] ?? '') === basename(__FILE__);
+    $isDirectCall = defined('LMO_ADDON_STANDALONE_CALL');
     $prefix = $isDirectCall ? '../../' : '';
     return $prefix;
 }
@@ -312,9 +319,20 @@ function renderTabellenrechnerView(int $ligaId, array $allSpieltage, int $trNr, 
     $tabelleHtml = renderTabellenrechnerTabelle($ligaId, $allPartien, $opts, $teams, $favTeamId, $maxNr, $tpl['standingsRowTpl']);
 
     // ── JavaScript ────────────────────────────────────────────────────────
-    $self = basename($_SERVER['SCRIPT_NAME'] ?? 'lmo-tabellenrechner.php');
-    $recalcUrl   = $self . '?tr_liga=' . $ligaId . '&ajax=recalc&tr_template=' . urlencode($trTemplate);
-    $spieltagUrl = $self . '?tr_liga=' . $ligaId . '&ajax=spieltag&tr_template=' . urlencode($trTemplate);
+    // Selbstreferenzierende AJAX-URL für "Neu berechnen"/Spieltag-Wechsel:
+    // über den zentralen Controller addon-run.php (der einzige noch
+    // erlaubte Aufrufweg) muss diese URL zwingend die addon=/file=
+    // Parameter mitführen, sonst bricht der AJAX-Folgeaufruf mit einem
+    // 400-Fehler ab (siehe addon-run.php).
+    if (defined('LMO_ADDON_STANDALONE_CALL') && isset($_GET['addon'], $_GET['file'])) {
+        $self    = 'addon-run.php?addon=' . rawurlencode((string)$_GET['addon']) . '&file=' . rawurlencode((string)$_GET['file']);
+        $selfSep = '&';
+    } else {
+        $self    = basename($_SERVER['SCRIPT_NAME'] ?? 'lmo-tabellenrechner.php');
+        $selfSep = '?';
+    }
+    $recalcUrl   = $self . $selfSep . 'tr_liga=' . $ligaId . '&ajax=recalc&tr_template=' . urlencode($trTemplate);
+    $spieltagUrl = $self . $selfSep . 'tr_liga=' . $ligaId . '&ajax=spieltag&tr_template=' . urlencode($trTemplate);
     $recalcJs   = json_encode($recalcUrl,   JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     $spieltagJs = json_encode($spieltagUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     $trNrJs     = json_encode($trNr, JSON_UNESCAPED_SLASHES);
