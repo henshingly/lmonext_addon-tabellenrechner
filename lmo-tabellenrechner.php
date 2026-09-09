@@ -2,7 +2,7 @@
 /**
  * Project: LMOnext
  * Filename: addon/tabellenrechner/lmo-tabellenrechner.php
- * Fileversion: 1.1.1
+ * Fileversion: 1.1.2
  *
  * PHP version 8.2
  *
@@ -326,6 +326,17 @@ function renderTabellenrechnerView(int $ligaId, array $allSpieltage, int $trNr, 
     // 400-Fehler ab (siehe addon-run.php).
     if (defined('LMO_ADDON_STANDALONE_CALL') && isset($_GET['addon'], $_GET['file'])) {
         $self    = 'addon-run.php?addon=' . rawurlencode((string)$_GET['addon']) . '&file=' . rawurlencode((string)$_GET['file']);
+        $selfSep = '&';
+    } elseif (isset($_GET['name'])) {
+        /*
+        Aufruf über eine Demo-/Wrapper-Seite wie website/demo.php, die das
+        Addon per include() einbindet und selbst über ?name=... routet
+        (SCRIPT_NAME zeigt dann auf die Wrapper-Datei, nicht auf diese
+        Addon-Datei). Ohne das name=-Präfix würde der AJAX-Folgeaufruf ins
+        Leere laufen ("Addon nicht gefunden"), weil der Wrapper den
+        Addon-Schlüssel nicht mehr kennt.
+        */
+        $self    = basename($_SERVER['SCRIPT_NAME'] ?? 'demo.php') . '?name=' . rawurlencode((string)$_GET['name']);
         $selfSep = '&';
     } else {
         $self    = basename($_SERVER['SCRIPT_NAME'] ?? 'lmo-tabellenrechner.php');
