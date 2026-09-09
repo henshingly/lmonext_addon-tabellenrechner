@@ -1,6 +1,6 @@
 {
     "name": "tabellenrechner",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "type": "standalone",
     "standalone_entrypoints": ["lmo-tabellenrechner.php"],
     "description": {
@@ -9,7 +9,7 @@
     },
     "author": "Dietmar Kersting, Torsten Hofmann",
     "license": "GPL-3.0-only",
-    "homepage": "https://github.com/henshingly/lmonext_addon-tabellenrechner",
+    "homepage": "https://github.com/lmonext/addon-tabellenrechner",
     "icon": "🧮",
     "min_core_version": "1.9.0",
     "dependencies": [],

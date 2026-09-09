@@ -22,6 +22,11 @@ CHANGELOG.md des LMOnext-Kernprojekts unter den Abschnitten
   eine zu alte Core-Version blockieren). "1.9.0" ist die tatsächliche
   LMOnext-Core-Version, ab der der Addon-Manager überhaupt existiert.
 
+## Version 1.1.1 (KRITISCHER Bugfix)
+
+- KRITISCHER Bugfix (gemeldet: "403 Forbidden: Ungültiges oder fehlendes CSRF-Token" bei jeder Ergebnisänderung im Was-wäre-wenn-Rechner): die Neuberechnungs-Anfrage wurde bisher mit Content-Type "application/json" gesendet (roher JSON-Body, ohne jedes CSRF-Token). PHP füllt $_POST aber NUR bei "application/x-www-form-urlencoded" oder "multipart/form-data" automatisch - requireCsrf() (zentral in frontend/bootstrap.php für JEDEN POST-Request geprüft, noch bevor der Addon-Code selbst läuft) verlangt das Token aber ausschließlich in $_POST['csrf_token']. Ein im JSON-Body mitgesendetes Token wäre also so oder so nie gesehen worden. Fix: lmo-tabellenrechner.php 1.1.1 - der Client sendet jetzt "application/x-www-form-urlencoded" mit zwei Feldern (csrf_token, results als JSON-String) statt eines rohen JSON-Bodys; das Token wird beim Seitenaufbau serverseitig als JS-Variable eingebettet (analog zu csrfField() bei normalen POST-Formularen). handleTabellenrechnerAjax() liest die Overrides jetzt aus $_POST['results'] statt aus dem rohen Request-Body.
+- Hinweis: dieser Fix behebt das eindeutig identifizierte Problem (fehlendes Token). Sollte dieses Addon als iframe auf einer FREMDEN Domain eingebettet werden, könnte je nach Session-Cookie-Konfiguration des Servers (SameSite-Richtlinie) zusätzlich ein separates Cookie-Problem auftreten, das eine serverseitige Konfigurationsanpassung bräuchte - das ist unabhängig von diesem Fix.
+
 ## Version 1.1.0 (Sicherheitsüberarbeitung)
 
 - lmo-tabellenrechner.php 1.1.0: Aufruf-Erkennung auf die neue Konstante

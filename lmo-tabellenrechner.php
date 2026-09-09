@@ -2,7 +2,7 @@
 /**
  * Project: LMOnext
  * Filename: addon/tabellenrechner/lmo-tabellenrechner.php
- * Fileversion: 1.1.0
+ * Fileversion: 1.1.1
  *
  * PHP version 8.2
  *
@@ -336,6 +336,12 @@ function renderTabellenrechnerView(int $ligaId, array $allSpieltage, int $trNr, 
     $recalcJs   = json_encode($recalcUrl,   JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     $spieltagJs = json_encode($spieltagUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     $trNrJs     = json_encode($trNr, JSON_UNESCAPED_SLASHES);
+    // Bugfix (siehe ausführlicher Kommentar bei handleTabellenrechnerAjax()):
+    // CSRF-Token für die Neuberechnungs-Anfrage als JS-Variable einbetten,
+    // genau wie es sonst über csrfField() als verstecktes Formularfeld für
+    // normale POST-Formulare passiert - hier per fetch() statt Formular
+    // gesendet, daher als JS-Wert statt HTML-Input.
+    $csrfJs     = json_encode(csrfToken(), JSON_UNESCAPED_SLASHES);
 
     $js = <<<HTML
 <script>
@@ -344,6 +350,7 @@ function renderTabellenrechnerView(int $ligaId, array $allSpieltage, int $trNr, 
   var recalcUrl   = {$recalcJs};
   var spieltagUrl  = {$spieltagJs};
   var currentNr   = {$trNrJs};
+  var csrfToken   = {$csrfJs};
   var debounceTimer = null;
 
   // Cache aller Benutzer-Overrides ueber alle Spieltage hinweg.
@@ -376,10 +383,16 @@ function renderTabellenrechnerView(int $ligaId, array $allSpieltage, int $trNr, 
     if (!body) { return; }
     body.style.opacity = '0.4';
 
+    // Bugfix (siehe ausführlicher Kommentar bei handleTabellenrechnerAjax()):
+    // Content-Type auf "application/x-www-form-urlencoded" umgestellt (statt
+    // "application/json") und das CSRF-Token als eigenes Feld mitgesendet -
+    // PHP füllt $_POST nur bei diesem Content-Type automatisch, und
+    // requireCsrf() (zentral für jeden POST-Request geprüft) verlangt das
+    // Token genau dort.
     fetch(recalcUrl, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({results: allOverrides})
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: 'csrf_token=' + encodeURIComponent(csrfToken) + '&results=' + encodeURIComponent(JSON.stringify(allOverrides))
     })
     .then(function(r) { return r.text(); })
     .then(function(html) {
@@ -601,12 +614,27 @@ function handleSpieltagAjax(int $ligaId, array $allSpieltage, string $trTemplate
 /**
  * AJAX: Live-Neuberechnung der Tabelle mit allen Overrides aus allen
  * Spieltagen (allOverrides im JS-Cache).
+ *
+ * BUGFIX (gemeldet: "403 Forbidden: Ungültiges oder fehlendes CSRF-Token"
+ * bei jeder Ergebnisänderung): der Request wurde bisher mit
+ * Content-Type "application/json" gesendet (roher JSON-Body). PHP füllt
+ * $_POST aber NUR bei "application/x-www-form-urlencoded" oder
+ * "multipart/form-data" automatisch - bei einem JSON-Body bleibt $_POST
+ * immer leer. requireCsrf() (zentral in frontend/bootstrap.php für JEDEN
+ * POST-Request aufgerufen, noch bevor dieser Code hier überhaupt läuft)
+ * prüft aber ausschließlich $_POST['csrf_token'] - ein im JSON-Body
+ * mitgesendetes Token wäre also so oder so nie gesehen worden, selbst wenn
+ * das Addon eins mitgeschickt hätte (was es bisher zusätzlich gar nicht
+ * tat). Fix: der Client sendet jetzt "application/x-www-form-urlencoded"
+ * mit zwei Feldern (csrf_token, results als JSON-String) statt eines
+ * rohen JSON-Bodys - dadurch füllt PHP $_POST korrekt, und
+ * requireCsrf() findet das Token wie bei jedem anderen POST-Formular im
+ * System auch.
  */
 function handleTabellenrechnerAjax(int $ligaId, array $allSpieltage, string $trTemplate) : void
 {
-    $raw = file_get_contents('php://input');
-    $data = json_decode($raw, true);
-    $overrides = is_array($data['results'] ?? null) ? $data['results'] : [];
+    $data      = json_decode((string)($_POST['results'] ?? '{}'), true);
+    $overrides = is_array($data) ? $data : [];
 
     $opts       = LigaService::getLigaOptions($ligaId);
     $teams      = LigaService::getLigaTeamsList($ligaId);
