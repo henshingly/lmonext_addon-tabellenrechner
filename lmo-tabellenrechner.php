@@ -2,7 +2,7 @@
 /**
  * Project: LMOnext
  * Filename: addon/tabellenrechner/lmo-tabellenrechner.php
- * Fileversion: 1.1.2
+ * Fileversion: 1.1.3
  *
  * PHP version 8.2
  *
@@ -19,9 +19,11 @@
  *   $tr_liga = 3;       // Liga-ID (Pflicht)
  *   include('/PfadZuLMOnext/addon/tabellenrechner/lmo-tabellenrechner.php');
  *
- * Variante 2 – per direkter URL / IFrame:
+ * Variante 2 – per IFrame (über den zentralen Standalone-Controller, siehe
+ * addon-run.php im Projekt-Root - direkte Aufrufe der .php-Datei sind aus
+ * Sicherheitsgründen per addon/.htaccess gesperrt):
  *
- *   <iframe src="https://.../addon/tabellenrechner/lmo-tabellenrechner.php?tr_liga=3"
+ *   <iframe src="https://.../addon-run.php?addon=tabellenrechner&file=lmo-tabellenrechner.php&tr_liga=3"
  *           frameborder="0" width="860" height="700" scrolling="auto"></iframe>
  *
  * Steuerparameter (GET hat immer Vorrang vor vorher gesetzten PHP-Variablen):

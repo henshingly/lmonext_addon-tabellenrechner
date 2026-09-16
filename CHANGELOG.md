@@ -22,6 +22,15 @@ CHANGELOG.md des LMOnext-Kernprojekts unter den Abschnitten
   eine zu alte Core-Version blockieren). "1.9.0" ist die tatsächliche
   LMOnext-Core-Version, ab der der Addon-Manager überhaupt existiert.
 
+## Version 1.1.3 (Dokumentations-Bugfix)
+
+- Bugfix (siehe ewige-tabelle CHANGELOG.md 1.3.2 fuer den vollstaendigen
+  Hintergrund zur systematischen Pruefung): iframe-Hinweis im Datei-Kopf
+  zeigte einen direkten, durch addon/.htaccess gesperrten Pfad
+  (addon/tabellenrechner/lmo-tabellenrechner.php?...). Korrigiert auf
+  addon-run.php?addon=tabellenrechner&file=lmo-tabellenrechner.php&... -
+  die Standalone-Erkennung selbst war bereits korrekt.
+
 ## Version 1.1.2 (Bugfix)
 
 - Bugfix "Addon nicht gefunden:" bei jeder Ergebnisänderung/jedem Spieltag-Wechsel, wenn das Addon über eine Demo-/Wrapper-Seite (z.B. website/demo.php) per include() eingebunden wurde: die selbstreferenzierende AJAX-URL kannte bisher nur den Aufruf über addon-run.php (addon=/file=) sowie einen angenommenen Direktaufruf der Addon-Datei selbst. Bei Einbindung über eine ?name=...-basierte Wrapper-Seite zeigt SCRIPT_NAME jedoch auf die Wrapper-Datei, wodurch die gebaute AJAX-URL das für den Wrapper nötige name=-Präfix verlor und der Folgeaufruf ins Leere lief. Fix: zusätzlicher Erkennungszweig für isset($_GET['name']), der die AJAX-URL mit name=-Parameter gegen die Wrapper-Datei selbst aufbaut.
