@@ -24,8 +24,8 @@ CHANGELOG.md des LMOnext-Kernprojekts unter den Abschnitten
 
 ## Version 1.1.3 (Dokumentations-Bugfix)
 
-- Bugfix (siehe ewige-tabelle CHANGELOG.md 1.3.2 fuer den vollstaendigen
-  Hintergrund zur systematischen Pruefung): iframe-Hinweis im Datei-Kopf
+- Bugfix (siehe ewige-tabelle CHANGELOG.md 1.3.2 für den vollständigen
+  Hintergrund zur systematischen Prüfung): iframe-Hinweis im Datei-Kopf
   zeigte einen direkten, durch addon/.htaccess gesperrten Pfad
   (addon/tabellenrechner/lmo-tabellenrechner.php?...). Korrigiert auf
   addon-run.php?addon=tabellenrechner&file=lmo-tabellenrechner.php&... -
