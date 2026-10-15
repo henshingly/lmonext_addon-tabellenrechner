@@ -36,13 +36,13 @@
  *
  * Das Template nutzt {PLATZHALTER} im Stil {NAME} (nicht als HTML-Kommentare,
  * um Konflikte mit verschachtelten Kommentaren zu vermeiden).
- * Wiederholungs-Bloecke: <!-- BEGIN PARTIEN --> ... <!-- END PARTIEN -->
+ * Wiederholungs-Blöcke: <!-- BEGIN PARTIEN --> ... <!-- END PARTIEN -->
  *                        <!-- BEGIN INHALT --> ... <!-- END INHALT -->
  *
  * ── Funktionsweise ────────────────────────────────────────────────────────────
  *
- * Der Tabellenrechner ist ein "Was-waere-wenn"-Werkzeug: Er zeigt den
- * gewaehlten Spieltag mit allen Paarungen und die aktuelle Tabelle darunter.
+ * Der Tabellenrechner ist ein "Was-wäre-wenn"-Werkzeug: Er zeigt den
+ * gewählten Spieltag mit allen Paarungen und die aktuelle Tabelle darunter.
  * Der Besucher kann Ergebnisse eintragen (ohne Speichern), und die Tabelle
  * wird per AJAX live neu berechnet. Beim Wechsel des Spieltags bleiben
  * bereits eingegebene Ergebnisse erhalten (JS-Cache, kein Page-Reload).
@@ -146,7 +146,7 @@ $trTemplate = str_replace('..', '', basename($trTemplate)); // Path-Traversal-Sc
 $allSpieltage = LigaService::getAllSpieltage($ligaId);
 if (empty($allSpieltage)) {
     if ($trIsDirectCall) {
-        echo '<p>Keine Spieltage fuer Liga ' . $ligaId . ' gefunden.</p>';
+        echo '<p>Keine Spieltage für Liga ' . $ligaId . ' gefunden.</p>';
     }
     return;
 }
@@ -173,7 +173,7 @@ if ($trNr > $maxNr) {
     $trNr = $maxNr;
 }
 
-// ── Direct-Call: HTML-Geruest ───────────────────────────────────────────────
+// ── Direct-Call: HTML-Gerüst ───────────────────────────────────────────────
 if ($trIsDirectCall) {
     header('Content-Type: text/html; charset=utf-8');
     echo '<!DOCTYPE html>' . "\n" . '<html><head><meta charset="utf-8">'
@@ -193,8 +193,8 @@ if ($trIsDirectCall) {
 // ════════════════════════════════════════════════════════════════════════════
 
 /**
- * Laedt das Template, extrahiert die Wiederholungs-Bloecke und gibt
- * Skeleton + Row-Templates zurueck.
+ * Lädt das Template, extrahiert die Wiederholungs-Blöcke und gibt
+ * Skeleton + Row-Templates zurück.
  */
 function trLoadTemplate(string $templateName) : array
 {
@@ -227,7 +227,7 @@ function trLoadTemplate(string $templateName) : array
 
 /**
  * Baut den Spieltag-Picker (Select-Dropdown).
- * Kein onchange-location.href mehr — das Switching laeuft per AJAX,
+ * Kein onchange-location.href mehr — das Switching läuft per AJAX,
  * damit eingegebene Ergebnisse erhalten bleiben.
  */
 function trRenderSpieltagPicker(array $allSpieltage, int $currentNr) : string
@@ -251,7 +251,7 @@ function trRenderSpieltagPicker(array $allSpieltage, int $currentNr) : string
 }
 
 /**
- * Rendert die Partien-Zeilen-HTML fuer einen Spieltag.
+ * Rendert die Partien-Zeilen-HTML für einen Spieltag.
  * Zentral ausgelagert, damit sowohl der initiale Render als auch der
  * AJAX-Spieltag-Switch dieselbe Logik verwenden.
  */
@@ -310,7 +310,7 @@ function renderTabellenrechnerView(int $ligaId, array $allSpieltage, int $trNr, 
     // ── Spieltag-Picker ────────────────────────────────────────────────────
     $picker = trRenderSpieltagPicker($allSpieltage, $trNr);
 
-    // ── Partien des gewaehlten Spieltags ──────────────────────────────────
+    // ── Partien des gewählten Spieltags ──────────────────────────────────
     $spieltag = LigaService::getSpieltagByNummer($allSpieltage, $trNr);
     $partien  = $spieltag !== null ? LigaService::getSpieltagPartien((int)$spieltag['id']) : [];
     $partien  = array_values(array_filter($partien, static fn(array $p) => !LigaService::partieIsEmptyPlaceholder($p)));
@@ -366,12 +366,12 @@ function renderTabellenrechnerView(int $ligaId, array $allSpieltage, int $trNr, 
   var csrfToken   = {$csrfJs};
   var debounceTimer = null;
 
-  // Cache aller Benutzer-Overrides ueber alle Spieltage hinweg.
-  // Schluessel = Partie-ID, Wert = { h: int, g: int }
+  // Cache aller Benutzer-Overrides über alle Spieltage hinweg.
+  // Schlüssel = Partie-ID, Wert = { h: int, g: int }
   var allOverrides = {};
 
   // ── Eingaben sammeln (nur sichtbare Inputs, aber allOverrides
-  //    enthaelt auch Overrides von anderen Spieltagen) ─────────────────────
+  //    enthält auch Overrides von anderen Spieltagen) ─────────────────────
   function syncVisibleToCache() {
     var inputs = document.querySelectorAll('.tr-input');
     inputs.forEach(function(inp) {
@@ -399,7 +399,7 @@ function renderTabellenrechnerView(int $ligaId, array $allSpieltage, int $trNr, 
     // Bugfix (siehe ausführlicher Kommentar bei handleTabellenrechnerAjax()):
     // Content-Type auf "application/x-www-form-urlencoded" umgestellt (statt
     // "application/json") und das CSRF-Token als eigenes Feld mitgesendet -
-    // PHP füllt $_POST nur bei diesem Content-Type automatisch, und
+    // PHP füllt die POST-Daten nur bei diesem Content-Type automatisch, und
     // requireCsrf() (zentral für jeden POST-Request geprüft) verlangt das
     // Token genau dort.
     fetch(recalcUrl, {
@@ -484,7 +484,7 @@ function renderTabellenrechnerView(int $ligaId, array $allSpieltage, int $trNr, 
     });
   }
 
-  // ── Zuruecksetzen ──────────────────────────────────────────────────────
+  // ── Zurücksetzen ──────────────────────────────────────────────────────
   var resetBtn = document.querySelector('.tr-reset-btn');
   if (resetBtn) {
     resetBtn.addEventListener('click', function() {
@@ -493,7 +493,7 @@ function renderTabellenrechnerView(int $ligaId, array $allSpieltage, int $trNr, 
         var pid = inp.getAttribute('data-pid');
         var orig = inp.getAttribute('data-orig');
         inp.value = orig !== null ? orig : '';
-        // Override fuer diese Partie aus dem Cache loeschen
+        // Override für diese Partie aus dem Cache löschen
         if (allOverrides[pid]) {
           delete allOverrides[pid];
         }
@@ -537,7 +537,7 @@ function trGetLigaName(int $ligaId) : string
 
 /**
  * Berechnet die Tabelle mit optional modifizierten Partien und gibt die
- * Tabellenzeilen-HTML zurueck. Wird fuer den initialen Render und den
+ * Tabellenzeilen-HTML zurück. Wird für den initialen Render und den
  * AJAX-Recall verwendet.
  */
 function renderTabellenrechnerTabelle(
@@ -605,7 +605,7 @@ function renderTabellenrechnerTabelle(
 }
 
 /**
- * AJAX: Spieltag-Wechsel — liefert nur die Partien-<tr>-Zeilen fuer den
+ * AJAX: Spieltag-Wechsel — liefert nur die Partien-<tr>-Zeilen für den
  * angeforderten Spieltag. Die Tabelle wird im Frontend per recalc-AJAX
  * separat aktualisiert.
  */
@@ -655,7 +655,7 @@ function handleTabellenrechnerAjax(int $ligaId, array $allSpieltage, string $trT
     $maxNr      = LigaService::getMaxSpieltagNummer($allSpieltage);
     $favTeamId  = LigaService::resolveTeamNumberToId($ligaId, (int)($opts['favTeam'] ?? 0));
 
-    // Overrides auf alle Partien anwenden (Partie-ID ist ueber Spieltage hinweg eindeutig)
+    // Overrides auf alle Partien anwenden (Partie-ID ist über Spieltage hinweg eindeutig)
     foreach ($allPartien as &$p) {
         $pId = (int)($p['id'] ?? 0);
         if (isset($overrides[$pId])) {
